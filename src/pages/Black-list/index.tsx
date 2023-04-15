@@ -6,7 +6,7 @@ import axios from 'axios';
 
 type BlacklistProps = {};
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://check-text-api-bfkg.vercel.app';
 
 const BlackListPage: React.FC<BlacklistProps> = () => {
 const [blacklist, setBlacklist] = useState<string[]>([]);

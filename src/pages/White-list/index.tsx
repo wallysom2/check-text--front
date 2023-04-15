@@ -6,7 +6,7 @@ import axios from 'axios';
 
 type WhitelistProp = {};
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://check-text-api-bfkg.vercel.app';
 
 const WhiteListPage: React.FC<WhitelistProp> = () => {
   const [whitelist, setWhitelist] = useState<string[]>([]);
