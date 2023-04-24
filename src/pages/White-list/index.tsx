@@ -1,79 +1,83 @@
-import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Container, Title, Input, Button, List, ListItem, ButtonList } from '../../styles/Container-styles';
-import axios from 'axios';
+import {
+	Button,
+	ButtonList,
+	Container,
+	Input,
+	List,
+	ListItem,
+	Title,
+} from '../../styles/Container-styles';
 
-type WhitelistProp = {};
+const API_URL = 'https://check-text-api-two.vercel.app';
 
-const API_URL = 'https://check-text-api-bfkg.vercel.app';
+const WhiteListPage = () => {
+	const [whitelist, setWhitelist] = useState<string[]>([]);
+	const [word, setword] = useState<string>('');
 
-const WhiteListPage: React.FC<WhitelistProp> = () => {
-  const [whitelist, setWhitelist] = useState<string[]>([]);
-  const [newWord, setNewWord] = useState<string>('');
+	const handleAddWord = async () => {
+		try {
+			await axios.post(`${API_URL}/whitelist/add`, { word: word });
+			setWhitelist([...whitelist, word]);
+			setword('');
+			console.log(`${word} adicionada com sucesso!`);
+		} catch (error) {
+			console.error(error);
+			toast.error(`${word} já é uma palavra permitida`);
+		}
+	};
 
-  useEffect(() => {
-    const storedWhitelist = localStorage.getItem('whitelist');
-    if (storedWhitelist) {
-      setWhitelist(JSON.parse(storedWhitelist));
-    }
-  }, []);
+	const handleRemoveWord = async (word: string) => {
+		try {
+			await axios.post(`${API_URL}/whitelist/remove`, { word });
+			setWhitelist(whitelist.filter((w) => w !== word));
+			toast.success(`${word} foi removido da lista de palavras permitidas`);
+		} catch (error) {
+			console.error(error);
+		}
+	};
 
-  const handleAddWord = async () => {
-    if (!newWord.trim()) {
-      return toast.error('Por favor, digite uma palavra válida');
-    }
-    try {
-      const response = await axios.post(`${API_URL}/whitelist/add`, { word: newWord });
-      console.log(response);
-      const updatedWhitelist = [...whitelist, newWord];
-      setWhitelist(updatedWhitelist);
-      localStorage.setItem('whitelist', JSON.stringify(updatedWhitelist));
+	useEffect(() => {
+		const getWords = async () => {
+			try {
+				const response = await axios.get(`${API_URL}/whitelist`);
+				setWhitelist(response.data);
+			} catch (error) {
+				console.error(error);
+			}
+		};
 
-      setNewWord('');
-      toast.success(`${newWord} agora é uma palavra permitida!`);
-    } catch (error) {
-      console.error(error);
-      toast.error(`Não foi possível adicionar ${newWord}`);
-    }
-  };
+		getWords();
+	}, []);
 
-  const handleRemoveWord = async (word: string) => {
-    try {
-      const response = await axios.post(`${API_URL}/whitelist/remove`, { word });
-      console.log(response);
-      const updatedWhitelist = whitelist.filter((item) => item !== word);
-      setWhitelist(updatedWhitelist);
-      localStorage.setItem('whitelist', JSON.stringify(updatedWhitelist));
-
-      toast.success(`${word} foi removido da lista branca`);
-    } catch (error) {
-      console.error(error);
-      toast.error(`Não foi possível remover ${word}`);
-    }
-  };
-
-  return (
-    <>
-      <Container style={{ backgroundColor: '#c5deb4' }}>
-        <ToastContainer autoClose={3000} />
-        <Title style={{ paddingTop: '100px', color: '#103f0b' }}>Cadastrar Exceção</Title>
-        <Input
-          value={newWord}
-          onChange={(e) => setNewWord(e.target.value)}
-          placeholder="Digite uma palavra"
-        />
-        <Button onClick={handleAddWord}>Adicionar</Button>
-        <List>
-          {whitelist.map((word) => (
-            <ListItem key={word}>
-              <ButtonList onClick={() => handleRemoveWord(word)}>{word}</ButtonList>
-            </ListItem>
-          ))}
-        </List>
-      </Container>
-    </>
-  );
+	return (
+		<>
+			<Container style={{ backgroundColor: '#c5deb4' }}>
+				<ToastContainer autoClose={2000} />
+				<Title style={{ paddingTop: '100px', color: '#103f0b' }}>
+					Cadastrar Exceção
+				</Title>
+				<Input
+					type="text"
+					value={word}
+					onChange={(e) => setword(e.target.value)}
+				/>
+				<Button onClick={handleAddWord}>Adicionar</Button>
+				<List>
+					{whitelist.map((word) => (
+						<ListItem key={word}>
+							<ButtonList onClick={() => handleRemoveWord(word)}>
+								{word}
+							</ButtonList>
+						</ListItem>
+					))}
+				</List>
+			</Container>
+		</>
+	);
 };
 
 export default WhiteListPage;

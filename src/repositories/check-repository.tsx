@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://check-text-api-bfkg.vercel.app';
+const API_URL = 'https://check-text-api-two.vercel.app';
 
 const checkForProfanity = async (text: string) => {
   try {

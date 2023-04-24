@@ -1,77 +1,84 @@
-import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Container, Title, Input, Button, List, ListItem, ButtonList} from '../../styles/Container-styles';
-import axios from 'axios';
+import {
+	Button,
+	ButtonList,
+	Container,
+	Input,
+	List,
+	ListItem,
+	Title
+} from '../../styles/Container-styles';
 
-type BlacklistProps = {};
+const API_URL = 'https://check-text-api-two.vercel.app';
 
-const API_URL = 'https://check-text-api-bfkg.vercel.app';
+const App = () => {
+	const [blacklist, setBlacklist] = useState<string[]>([]);
+	const [word, setword] = useState<string>('');
 
-const BlackListPage: React.FC<BlacklistProps> = () => {
-const [blacklist, setBlacklist] = useState<string[]>([]);
-const [newWord, setNewWord] = useState<string>('');
+	const handleAddWord = async () => {
+		try {
+			await axios.post(`${API_URL}/blacklist/add`, { word: word });
+			setBlacklist([...blacklist, word]);
+			setword('');
+			console.log(`${word} adicionada com sucesso!`);
+		} catch (error) {
+			console.error(error);
+			toast.error(`${word} já está na lista negra`);
+		}
+	};
 
-useEffect(() => {
-const storedBlacklist = localStorage.getItem('blacklist');
-if (storedBlacklist) {
-setBlacklist(JSON.parse(storedBlacklist));
-}
-}, []);
+	const handleRemoveWord = async (word: string) => {
+		try {
+			await axios.post(`${API_URL}/blacklist/remove`, { word });
+			setBlacklist(blacklist.filter((w) => w !== word));
+			toast.success(`${word} foi removido da lista negra`);
+		} catch (error) {
+			console.error(error);
+		}
+	};
 
-const handleAddWord = async () => {
-if (!newWord.trim()) {
-return toast.error('Por favor, digite uma palavra válida');
-}
-try {
-const response = await axios.post(`${API_URL}/blacklist/add`, { word: newWord });
-console.log(response);
-const updatedBlacklist = [...blacklist, newWord];
-setBlacklist(updatedBlacklist);
-localStorage.setItem('blacklist', JSON.stringify(updatedBlacklist));
+	useEffect(() => {
+		const getWords = async () => {
+			try {
+				const response = await axios.get(`${API_URL}/blacklist`);
+				setBlacklist(response.data);
+			} catch (error) {
+				console.error(error);
+			}
+		};
 
-setNewWord('');
-toast.warning(`${newWord} agora é um xingamento!`);
-} catch (error) {
-console.error(error);
-toast.dark(`Não foi possível adicionar ${newWord}`);
-}
+		getWords();
+	}, []);
+
+	return (
+		<>
+			<Container>
+				<ToastContainer autoClose={2000} />
+				<Title style={{ paddingTop: '100px' }}>
+					Palavras Inapropriadas
+				</Title>
+				<Input
+					type="text"
+					value={word}
+					onChange={(e) => setword(e.target.value)}
+				/>
+				<Button onClick={handleAddWord}>Adicionar</Button>
+				<List>
+					{blacklist.map((word) => (
+						<ListItem key={word}>
+							<ButtonList onClick={() => handleRemoveWord(word)}>
+								{word}
+							</ButtonList>
+						</ListItem>
+						
+					))}
+				</List>
+			</Container>
+		</>
+	);
 };
 
-const handleRemoveWord = async (word: string) => {
-try {
-const response = await axios.post(`${API_URL}/blacklist/remove`, { word });
-console.log(response);
-const updatedBlacklist = blacklist.filter((item) => item !== word);
-  setBlacklist(updatedBlacklist);
-  localStorage.setItem('blacklist', JSON.stringify(updatedBlacklist));
-
-  toast.success(`${word} foi removido da lista negra`);
-} catch (error) {
-  console.error(error);
-  toast.dark(`Não foi possível remover ${word}`);
-}
-};
-
-return (
-<>
-<Container>
-<ToastContainer autoClose={3000} />
-<Title style={{
-paddingTop: '100px'}}
->Incluir como Inapropriada</Title>
-<Input type="text" value={newWord} onChange={(e) => setNewWord(e.target.value)} />
-<Button onClick={handleAddWord}>Adicionar</Button>
-<List>
-{blacklist.map((word) => (
-<ListItem key={word}>
-<ButtonList onClick={() => handleRemoveWord(word)}>{word}</ButtonList>
-</ListItem>
-))}
-</List>
-</Container>
-</>
-);
-};
-
-export default BlackListPage;
+export default App;
