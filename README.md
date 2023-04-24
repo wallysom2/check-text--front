@@ -32,11 +32,11 @@ To run this project, you will need to install [Node.js](https://nodejs.org/en/).
 
 Clone the repository:
 ```bash
- git clone https://github.com/bitlab-ufrn/selecao-2023-wallysom2/check-text-front.git 
+ git clone https://github.com/wallysom2/check-text--front.git 
 ```
 Access the project folder:
 ```bash
- cd selecao-2023-wallysom2/check-text-front
+ cd check-text--front
  ```
 Installation of dependencies
 ```bash
