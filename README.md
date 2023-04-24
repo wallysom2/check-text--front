@@ -1,4 +1,5 @@
 # Bitlab Selection Process Challenge - 2023
+Deploy: https://check-text-front.vercel.app
 
 <br/>
 
